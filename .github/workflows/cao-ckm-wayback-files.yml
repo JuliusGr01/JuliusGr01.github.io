@@ -1,0 +1,20 @@
+name: Cao CKM Wayback recovery
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests pandas
+      - run: python scripts/cao_ckm_wayback_files.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cao-ckm-wayback-recovery
+          path: cao_ckm_wayback/
+          retention-days: 7
