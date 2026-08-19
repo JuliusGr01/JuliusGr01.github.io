@@ -1,0 +1,19 @@
+name: Cao IMF patch probe
+on:
+  push:
+    branches: [cao-data-patch-temp]
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pandas sdmx1 requests
+      - run: python scripts/cao_imf_patch_probe.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cao-imf-patch-probe
+          path: cao_patch_probe/
