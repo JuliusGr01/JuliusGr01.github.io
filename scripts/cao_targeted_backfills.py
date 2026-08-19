@@ -35,10 +35,7 @@ pd.DataFrame(flow).to_csv(OUT/'dots_annual_1973_2019_corrected.csv',index=False)
 
 # IFS export-price alternatives including Belgium-Luxembourg union and monthly fallbacks.
 export=[]; eman=[]
-for country,codes in {
- 'Belgium':[('Q','BE'),('Q','R1'),('M','BE'),('M','R1')],
- 'Switzerland':[('Q','CH'),('M','CH')]
-}.items():
+for country,codes in {'Belgium':[('Q','BE'),('Q','R1'),('M','BE'),('M','R1')],'Switzerland':[('Q','CH'),('M','CH')]}.items():
  for freq,ar in codes:
   for ind in ['TXG_D_FOB_IX','PXP_IX']:
    code=f'{freq}.{ar}.{ind}'
@@ -49,23 +46,48 @@ for country,codes in {
 pd.DataFrame(eman).to_csv(OUT/'ifs_export_alt_manifest.csv',index=False)
 pd.DataFrame(export).to_csv(OUT/'ifs_export_alt_observations.csv',index=False)
 
-# West Germany / Germany legacy IFS reference-area candidate search from metadata labels.
+# West Germany / Germany legacy IFS reference-area candidate search.
 u='https://api.db.nomics.world/v22/series/IMF/IFS?limit=1'; j=S.get(u,timeout=90).json(); ds=j.get('dataset',{})
 (Path(OUT/'ifs_meta.json')).write_text(json.dumps(ds,indent=2),encoding='utf-8')
 dims=ds.get('dimensions_values_labels') or {}
 areas=dims.get('REF_AREA',{}) if isinstance(dims,dict) else {}
 west=[(k,v) for k,v in areas.items() if 'german' in str(v).lower()]
 pd.DataFrame(west,columns=['area_code','label']).to_csv(OUT/'ifs_germany_area_candidates.csv',index=False)
-# Test likely old historical area aliases and selected GDP/consumption series.
 wrows=[]; wman=[]
 for ar in list(dict.fromkeys([x[0] for x in west]+['DE','DE2'])):
- for freq in ['Q']:
-  for ind in ['NGDP_SA_XDC','NGDP_R_SA_XDC','NCP_SA_XDC','NCP_R_SA_XDC','NC_SA_XDC','NC_R_SA_XDC']:
-   code=f'{freq}.{ar}.{ind}'; doc,info=fetch('IMF','IFS',code); rr=rows(doc); keep=[(p,v) for p,v in rr if p[:4].isdigit() and 1973<=int(p[:4])<=1998]
-   if keep:
-    wman.append({'area':ar,'indicator':ind,'series_code':f'IMF/IFS/{code}','label':(doc or {}).get('series_name',''),'first':keep[0][0],'last':keep[-1][0],'n':len(keep)})
-    for p,v in keep:wrows.append({'period':p,'area':ar,'indicator':ind,'value':v,'series_code':f'IMF/IFS/{code}','label':(doc or {}).get('series_name','')})
+ for ind in ['NGDP_SA_XDC','NGDP_R_SA_XDC','NCP_SA_XDC','NCP_R_SA_XDC','NC_SA_XDC','NC_R_SA_XDC']:
+  code=f'Q.{ar}.{ind}'; doc,info=fetch('IMF','IFS',code); rr=rows(doc); keep=[(p,v) for p,v in rr if p[:4].isdigit() and 1973<=int(p[:4])<=1998]
+  if keep:
+   wman.append({'area':ar,'indicator':ind,'series_code':f'IMF/IFS/{code}','label':(doc or {}).get('series_name',''),'first':keep[0][0],'last':keep[-1][0],'n':len(keep)})
+   for p,v in keep:wrows.append({'period':p,'area':ar,'indicator':ind,'value':v,'series_code':f'IMF/IFS/{code}','label':(doc or {}).get('series_name','')})
 pd.DataFrame(wman).to_csv(OUT/'ifs_west_germany_series_manifest.csv',index=False); pd.DataFrame(wrows).to_csv(OUT/'ifs_west_germany_observations.csv',index=False)
 
-summary={'dots_series':len(man),'dots_obs':len(flow),'export_alt_series_with_obs':sum(1 for x in eman if x['n']>0),'west_germany_series':len(wman)}
+# OECD QNA employment backfills: total employment, persons, seasonally adjusted.
+emp=[]; empman=[]
+for iso,cname in name.items():
+ if iso=='EA': continue
+ code=f'{iso}.ETO.PERSA.Q'; doc,info=fetch('OECD','QNA',code); rr=rows(doc); keep=[(p,v) for p,v in rr if '1973-Q1'<=p<='2019-Q4']
+ empman.append({'country':cname,'series_code':f'OECD/QNA/{code}','status':info.get('status'),'series_label':(doc or {}).get('series_name',''),'first':keep[0][0] if keep else '', 'last':keep[-1][0] if keep else '', 'n':len(keep)})
+ for p,v in keep: emp.append({'period':p,'country':cname,'value':v,'unit':'Persons','seasonal_adjustment_status':'Seasonally adjusted','source_database':'OECD Quarterly National Accounts via DBnomics','exact_series_code':f'OECD/QNA/{code}','series_label':(doc or {}).get('series_name',''),'vintage':'OECD/QNA DBnomics snapshot indexed 2024-10-31','retrieval_date':'2026-08-19'})
+pd.DataFrame(empman).to_csv(OUT/'oecd_employment_manifest.csv',index=False); pd.DataFrame(emp).to_csv(OUT/'oecd_employment_observations.csv',index=False)
+
+# OECD QNA export nominal/volume annual-level SA components. Ratio gives an export deflator proxy for early gaps.
+xcomp=[]; xcman=[]
+for iso,cname in [('BEL','Belgium'),('CHE','Switzerland')]:
+ series={}
+ for measure,kind in [('CARSA','nominal_exports'),('VOBARSA','real_exports_oecd_ref')]:
+  code=f'{iso}.P6.{measure}.Q'; doc,info=fetch('OECD','QNA',code); rr=rows(doc); keep=[(p,v) for p,v in rr if '1973-Q1'<=p<='2019-Q4']
+  xcman.append({'country':cname,'kind':kind,'series_code':f'OECD/QNA/{code}','status':info.get('status'),'series_label':(doc or {}).get('series_name',''),'first':keep[0][0] if keep else '', 'last':keep[-1][0] if keep else '', 'n':len(keep)})
+  series[kind]=dict(keep)
+  for p,v in keep:xcomp.append({'period':p,'country':cname,'kind':kind,'value':v,'series_code':f'OECD/QNA/{code}','series_label':(doc or {}).get('series_name','')})
+ common=sorted(set(series.get('nominal_exports',{}))&set(series.get('real_exports_oecd_ref',{})))
+ if common:
+  base_period='2015-Q1' if '2015-Q1' in common else common[-1]
+  raw={p:series['nominal_exports'][p]/series['real_exports_oecd_ref'][p] for p in common}
+  b=raw[base_period]
+  for p in common:
+   xcomp.append({'period':p,'country':cname,'kind':'derived_export_deflator_index_2015Q1_100','value':100*raw[p]/b,'series_code':f'DERIVED: OECD/QNA/{iso}.P6.CARSA.Q / OECD/QNA/{iso}.P6.VOBARSA.Q','series_label':'Derived nominal/volume export deflator; annual-level SA components; normalized 2015Q1=100'})
+pd.DataFrame(xcman).to_csv(OUT/'oecd_export_components_manifest.csv',index=False); pd.DataFrame(xcomp).to_csv(OUT/'oecd_export_components_and_derived.csv',index=False)
+
+summary={'dots_series':len(man),'dots_obs':len(flow),'export_alt_series_with_obs':sum(1 for x in eman if x['n']>0),'west_germany_series':len(wman),'employment_series':sum(1 for x in empman if x['n']>0),'employment_obs':len(emp),'export_component_series':sum(1 for x in xcman if x['n']>0)}
 (OUT/'summary.json').write_text(json.dumps(summary,indent=2),encoding='utf-8'); print(json.dumps(summary,indent=2))
