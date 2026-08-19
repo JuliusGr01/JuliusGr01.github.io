@@ -1,0 +1,20 @@
+name: Cao OECD TFP fetch
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - run: python scripts/cao_oecd_tfp_fetch.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cao-oecd-tfp
+          path: cao_oecd_tfp/
+          retention-days: 7
