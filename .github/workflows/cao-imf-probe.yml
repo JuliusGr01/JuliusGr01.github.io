@@ -12,8 +12,8 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install requests
-      - run: python scripts/cao_imf_probe.py
+      - run: python scripts/cao_imf_fast.py
       - uses: actions/upload-artifact@v4
         with:
-          name: cao-imf-macro-panel
-          path: cao_output/
+          name: cao-imf-macro-panel-fast
+          path: cao_output_fast/
