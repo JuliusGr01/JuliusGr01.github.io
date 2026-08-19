@@ -1,7 +1,7 @@
 name: Cao IMF probe
 on:
-  push:
-    branches: [cao-data-fetch-temp]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 jobs:
   probe:
