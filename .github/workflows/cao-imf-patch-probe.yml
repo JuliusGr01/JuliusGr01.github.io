@@ -2,6 +2,8 @@ name: Cao IMF patch probe
 on:
   push:
     branches: [cao-data-patch-temp]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 jobs:
   probe:
