@@ -27,6 +27,7 @@
     nav {
       margin-top: 10px;
       display: flex;
+      flex-wrap: wrap;
       gap: 20px;
       font-size: 0.95rem;
     }
@@ -67,6 +68,32 @@
       padding-left: 20px;
     }
 
+    #research li {
+      margin-bottom: 20px;
+    }
+
+    .paper-link {
+      color: #000;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .pdf-viewer {
+      border: 1px solid #ddd;
+      height: 600px;
+      max-width: 100%;
+    }
+
+    .pdf-viewer iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    #contact a {
+      overflow-wrap: anywhere;
+    }
+
     footer {
       margin-top: 60px;
       padding-top: 20px;
@@ -81,21 +108,27 @@
   <main>
     <header>
       <h1>Julius Groß</h1>
-      <div class="muted">PhD Student in Economics · University of Cologne</div>
-    
-    <nav>
-      <a href="#about">About</a>
-      <a href="#research">Research</a>
-      <a href="#teaching">Teaching</a>
-      <a href="#cv">CV</a>
-      <a href="#contact">Contact</a>
-    </nav>
+
+      <div class="muted">
+        PhD Student in Economics · University of Cologne
+      </div>
+
+      <nav aria-label="Main navigation">
+        <a href="#about">About</a>
+        <a href="#research">Research</a>
+        <a href="#cv">CV</a>
+        <a href="#contact">Contact</a>
+      </nav>
     </header>
 
     <section id="about">
       <h2>About</h2>
+
       <p>
-        I am a PhD student in economics working on topics related to Macroeconomics (Monetary Policy, International Macro). Of special interest is the intersection to inequality and global fragmentation.
+        I am a PhD student in economics working on topics related to
+        Macroeconomics (Monetary Policy, International Macro).
+        Of special interest is the intersection to inequality and
+        global fragmentation.
       </p>
     </section>
 
@@ -104,38 +137,73 @@
 
       <ul>
         <li>
-          <strong>Neural networks to forecast trade</strong>  
+          <strong>Neural networks to forecast trade</strong>
           (with B. Meunier) (working paper coming soon)
-          Exploring when flexible models outperform classical forecasting tools.
+          <br />
+          Exploring when flexible models outperform classical
+          forecasting tools.
         </li>
 
         <li>
-          <strong>Monetary policy transmission in a polarized labour market</strong>  
-          Studying how policy shocks affect workers across the wage distribution.
+          <strong>
+            Central-Bank Information and Labor-Market Polarization
+          </strong>
+          <br />
+          Studying how central-bank announcements affect occupational
+          employment, worker reallocation and firm investment.
+          <br />
+
+          <!-- Keep this filename unchanged when updating the paper. -->
+          <a
+            class="paper-link"
+            href="paper.pdf"
+            target="_blank"
+            rel="noopener"
+          >
+            Latest draft (PDF)
+          </a>
         </li>
       </ul>
     </section>
 
-        <section id="cv">
+    <section id="cv">
+      <h2>CV</h2>
 
-      <!-- Embedded PDF viewer -->
-      <div style="border: 1px solid #ddd; height: 600px; max-width: 100%;">
+      <p>
+        <a href="CV.pdf" target="_blank" rel="noopener">
+          Open CV (PDF)
+        </a>
+      </p>
+
+      <div class="pdf-viewer">
         <iframe
           src="CV.pdf"
           title="CV of Julius Groß"
-          style="width: 100%; height: 100%; border: 0;"
-        >
-          <a href="CV.pdf">here</a>.
-        </iframe>
+          loading="lazy"
+        ></iframe>
       </div>
     </section>
-    
+
     <section id="contact">
       <h2>Contact</h2>
+
       <p>
-        Email: <a href="mailto:julius.gross@wiso.uni-koeln.de">julius.gross@wiso.uni-koeln.de</a><br />
-        GitHub: <a href="https://github.com/JuliusGr01">github.com/JuliusGr01</a><br />
-        LinkedIn: <a href="https://www.linkedin.com/in/julius-gross-b25122237/">https://www.linkedin.com/in/julius-gross-b25122237/</a>
+        Email:
+        <a href="mailto:julius.gross@wiso.uni-koeln.de">
+          julius.gross@wiso.uni-koeln.de
+        </a>
+        <br />
+
+        GitHub:
+        <a href="https://github.com/JuliusGr01">
+          github.com/JuliusGr01
+        </a>
+        <br />
+
+        LinkedIn:
+        <a href="https://www.linkedin.com/in/julius-gross-b25122237/">
+          linkedin.com/in/julius-gross-b25122237
+        </a>
       </p>
     </section>
 
@@ -145,7 +213,8 @@
   </main>
 
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
   </script>
 </body>
 </html>
